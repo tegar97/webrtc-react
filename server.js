@@ -4,7 +4,13 @@ const http = require("http");
 const app = express();
 const server = http.createServer(app);
 const socket = require("socket.io");
-const io = socket(server);
+const io = socket(server,{
+    cors:{
+        origin: '*',
+        methods: ["GET", "POST"],
+        credentials: true
+    }
+});
 
 const users = {};
 
@@ -23,12 +29,15 @@ io.on('connection', socket => {
             users[roomID] = [socket.id];
         }
         socketToRoom[socket.id] = roomID;
+        console.log(socketToRoom)
         const usersInThisRoom = users[roomID].filter(id => id !== socket.id);
+        console.log(usersInThisRoom)
 
         socket.emit("all users", usersInThisRoom);
     });
 
     socket.on("sending signal", payload => {
+        console.log(payload)
         io.to(payload.userToSignal).emit('user joined', { signal: payload.signal, callerID: payload.callerID });
     });
 
